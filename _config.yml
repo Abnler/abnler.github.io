@@ -3,7 +3,7 @@ title: Sher Blog
 SEOTitle: Sher| 
 header-img: img/post-bg-desk.jpg
 email: gsher1996@outlook.com
-description: "Every failure is leading towards success."
+description: "nothig happen"
 keyword: " "
 url: "http://abnler.github.io"          # your host, for absolute URL
 baseurl: ""      # for example, '/blog' if your blog hosted on 'host/blog'
@@ -99,16 +99,16 @@ service-worker: true
 # Friends
 friends: [
     {
-        title: "WY",
-        href: "http://zhengwuyang.com"
+        title: "CSDN",
+        href: "bull"
     },{
-        title: "简书·BY",
-        href: "http://www.jianshu.com/u/e71990ada2fd"
+        title: "",
+        href: " "
     },{
-        title: "Apple",
-        href: "https://apple.com"
+        title: " ",
+        href: " "
     },{
-        title: "Apple Developer",
-        href: "https://developer.apple.com/"
+        title: " ",
+        href: " "
     }
 ]
