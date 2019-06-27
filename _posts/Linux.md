@@ -6,7 +6,7 @@
 - New UNIX password:     //在这里输入新密码
 - Retype new UNIX password:  //再次输入新密码
 - passwd: all authentication tokens updated successfully.
-- 
+
 
 2、赋予root权限
 方法一： 修改 /etc/sudoers 文件，找到下面一行，把前面的注释（#）去掉## Allows people in group wheel to run all commands
