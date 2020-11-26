@@ -1,6 +1,6 @@
 # Site settings
-title: Abnler Blog
-SEOTitle: Abnler 
+title: Ran
+SEOTitle: Ran 
 header-img: img/post-bg-desk.jpg
 email: gsher1996@outlook.com
 description: "nothig happen"
@@ -56,8 +56,8 @@ kramdown:
 
 
 # 评论系统
-Disqus（https://disqus.com/）
-disqus_username: LeeIvens
+# Disqus（https://disqus.com/）
+# disqus_username: LeeIvens
 
 # Gitalk
 #gitalk:
