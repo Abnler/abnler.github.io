@@ -616,3 +616,229 @@ public String testPOJO(User user){
 
 ## 四、处理模型数据
 
+​	数据处理模式，是指业务处理完数据之后，将业务数据以何种形式传递，显示；如何将业务数据放在模型对象当中；
+
+Spring MVC 提供了以下几种途径输出模型数据：
+
+- ModelAndView: 处理方法返回值类型为 ModelAndView 时, 方法体即可通过该对象添加模型数据；
+- Map 及 Model: 入参为org.springframework.ui.Model、org.springframework.ui.ModelMap 或 java.uti.Map 时，处理方法返回时，Map 中的数据会自动添加到模型中。
+- @SessionAttributes: 将模型中的某个属性暂存到 HttpSession 中，以便多个请求之间可以共享这个属性
+- @ModelAttribute: 方法入参标注该注解后, 入参的对象就会放到数据模型中
+
+### 4.1 ModelAndView
+
+​	控制器处理方法的返回值如果为 ModelAndView, 则其既 包含视图信息，也包含模型数据信息；
+
+```java
+/**
+ *ModelAndView 其中可以包含，Model 以及View；
+ * 其中包含视图与模型信息；
+ * SpringMVC  会把ModelAndView 中的数据会把数据放到Request域中；
+ */
+@RequestMapping(value = "/testmodelandview")
+public ModelAndView testModelAndView() {
+    String viewName = SUCCESS;
+    ModelAndView modelAndView = new ModelAndView(viewName);
+
+    //添加数据到 ModelAndView中
+    modelAndView.addObject("time",new Date());
+    return modelAndView;
+}
+```
+
+```html
+<a href="springmvc/testmodelandview">test modelandview</a><br>
+```
+
+### 4.2 Map及Model
+
+```java
+/***
+ *目标方法可以添加Map类型的参数；实际上可以是 Model类型，或者是 ModelAndView类型
+ */
+@RequestMapping(value = "/testmap")
+public String testMap(Map<String,Object> map){
+    map.put("names", Arrays.asList("Tom","Jerry","Mike"));
+    return SUCCESS;
+}
+```
+
+```html
+<a href="springmvc/testmap">test map</a><br>
+```
+
+### 4.3  @SessionAttribute  注解
+
+​	若希望在多个请求之间共用某个模型属性数据，则可以在 控制器类上标注一个 @SessionAttributes, Spring MVC 将在模型中对应的属性暂存到 HttpSession 中。
+
+```java
+/**
+ *@SessionAttributes 除了可以通过属性名指定需要放到会 话中的属性外，还可以通过模型属性的对象类型指定哪些模型属性需要放到会话中;
+ * 
+ * 注意：该注解只能放在上，而不能放在方法上
+ */
+@RequestMapping(value = "/testsessionattribute")
+public String testSessionAttribute(Map<String,Object> map){
+
+    User tom = new User("Tom", "123", "tom@123.com", 15);
+    map.put("user",tom);
+    return SUCCESS;
+}
+```
+
+### 4.4 ModelAttribute 方法
+
+![image-20210111131816349](/Users/anner/Library/Application Support/typora-user-images/image-20210111131816349.png)
+
+在方法定义上使用 @ModelAttribute 注解：Spring MVC 在调用目标处理方法前，会先逐个调用在方法级上标注了@ModelAttribute 的方法；
+
+在方法的入参前使用  @ModelAttribute 注解：
+
+- 可以从隐含对象中获取隐含的模型数据中获取对象，再将请求参数 
+
+- 绑定到对象中，再传入入参将方法入参对象添加到模型中 
+
+```java
+/**
+ * 1、@ModelAttribute 标记的方法，会在每个目标方法执行志气啊被SpringMVC调用，把对象放入map 中，键为user：
+ *2、Spring MVC 从MAp中，并把表单中，并把请求参数给User对应饿属性值；
+ * 3、Spring MVC把上述的对象传入暮年方法的参数。
+ */
+
+@ModelAttribute
+public void getUser(@RequestParam(value="id",required=false) Integer id,
+                    Map<String, Object> map){
+    System.out.println("modelAttribute method");
+    if(id != null){
+        //模拟从数据苦衷获取对象
+        User user = new User(1, "Tom", "123456", "tom@atguigu.com", 12);
+        System.out.println("从数据库中获取一个对象：: " + user);
+
+        map.put("user", user);
+    }
+}
+
+@RequestMapping("/testModelAttribute")
+public String testModelAttribute(User user){
+    System.out.println("User: " + user);
+    return SUCCESS;
+}
+```
+
+```html
+<!--
+        模拟修改操作
+        1. 原始数据为: 1, Tom, 123456,tom@atguigu.com,12
+        2. 密码不能被修改.
+        3. 表单回显, 模拟操作直接在表单填写对应的属性值
+        -->
+<form action="springmvc/testModelAttribute" method="Post">
+<input type="hidden" name="id" value="1"/>
+        username: <input type="text" name="username" value="Tom"/>
+<br>
+        email: <input type="text" name="email" value="tom@atguigu.com"/>
+<br>
+        age: <input type="text" name="age" value="12"/>
+<br>
+<input type="submit" value="Submit"/>
+</form>
+<br><br>
+```
+
+## 五、视图以及视图解析器
+
+​	请求处理方法执行完成后，最终返回一个 ModelAndView 对象。对于那些返回 String，View 或 ModeMap 等类型的处理方法，Spring MVC 也会在内部将它们装配成一个ModelAndView 对象，它包含了逻辑名和模型对象的视图Spring MVC 借助视图解析器（ViewResolver）得到最•终的视图对象（View），最终的视图可以是 JSP ，也可能是Excel、JFreeChart 等各种表现形式的视图
+
+​	视图的作用是渲染模型数据，将模型里的数据以某种形式呈现给客 户。视图对象由视图解析器负责实例化。由于视图是无状态的，所以他们不会有线程安全的问题;
+
+![image-20210111141445408](/Users/anner/Library/Application Support/typora-user-images/image-20210111141445408.png)
+
+### 5.2 视图解析器
+
+SpringMVC 为逻辑视图名的解析提供了不同的策略，可 以在 Spring WEB 上下文中配置一种或多种解析策略，并指定他们之间的先后顺序。每一种映射策略对应一个具体的视图解析器实现类。
+
+视图解析器的作用比较单一：将逻辑视图解析为一个具体 的视图对象。所有的视图解析器都必须实现 ViewResolver 接口；
+
+
+
+**JSP 是最常见的视图技术，**可以使用InternalResourceViewResolver 作为视图解析器：
+
+```xml
+<!--    配置视图解析器：如何把handler 方法的返回值解析为是假的物理视图-->
+<bean class="org.springframework.web.servlet.view.InternalResourceViewResolver">
+    <property name="prefix" value="/WEB-INF/views/"></property>
+    <property name="suffix" value=".jsp"></property>
+</bean>
+```
+
+**JSTL VIEW**:若项目中使用了 JSTL，则 SpringMVC 会自动把视图由**InternalResourceView 转为 JstlView**
+
+
+
+**自定义视图：**
+
+**第一步：** 在Spring 配置文件中配置
+
+```xml
+<!--BeanNameViewResolver 使用视图的名称解析视图
+通过Order 属性类解析视图的有衔接，Order值越小优先级越高
+-->
+<bean class="org.springframework.web.servlet.view.BeanNameViewResolver">
+    <property name="order" value="100"/>
+</bean>
+
+    <!-- 在实际开发中通常都需配置 mvc:annotation-driven 标签 -->
+    <mvc:annotation-driven></mvc:annotation-driven>
+```
+
+**第二步：**业务实现 实现view接口
+
+```java
+@Component
+public class HelloView implements View {
+    @Override
+    public String getContentType() {
+        return "text/html";
+    }
+
+    @Override
+    public void render(Map<String, ?> map, HttpServletRequest httpServletRequest, HttpServletResponse httpServletResponse) throws Exception {
+        httpServletResponse.getWriter().println("hello view ,Time"+ new Date());
+    }
+}
+```
+
+第三步：业务逻辑实现
+
+```java
+@RequestMapping("/testview")
+public String testView(){
+    System.out.println("test view");
+    return "helloView";  //返回值为类名。首字母小写
+}
+```
+
+**测试：**
+
+```html
+<a href="springmvc/testview">test view</a><br>
+```
+
+### 5.3 转发重定向
+
+一般情况下，控制器方法返回字符串类型的值会被当成逻 辑视图名处理；
+
+如果返回的字符串中带 forward: 或 redirect: 前缀时，SpringMVC 会对他们进行特殊处理**：将 forward: 和redirect:** 当成指示符，其后的字符串作为 URL 来处理；
+
+```java
+@RequestMapping("/testRedirect")
+public String testRedirect(){
+    System.out.println("testRedirect");
+    return "redirect:/index.jsp";
+}
+```
+
+```html
+<a href="springmvc/testRedirect">test testRedirect</a><br>
+```
+
