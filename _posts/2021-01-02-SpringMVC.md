@@ -747,7 +747,7 @@ public String testModelAttribute(User user){
 
 ## 五、视图以及视图解析器
 
-​	请求处理方法执行完成后，最终返回一个 ModelAndView 对象。对于那些返回 String，View 或 ModeMap 等类型的处理方法，Spring MVC 也会在内部将它们装配成一个ModelAndView 对象，它包含了逻辑名和模型对象的视图Spring MVC 借助视图解析器（ViewResolver）得到最•终的视图对象（View），最终的视图可以是 JSP ，也可能是Excel、JFreeChart 等各种表现形式的视图
+​	请求处理方法执行完成后，最终返回一个 ModelAndView 对象。对于那些返回 String，View 或 ModeMap 等类型的处理方法，Spring MVC 也会在内部将它们装配成一个ModelAndView 对象，它包含了逻辑名和模型对象的视图Spring MVC 借助视图解析器（ViewResolver）得到最终的视图对象（View），最终的视图可以是 JSP ，也可能是Excel、JFreeChart 等各种表现形式的视图
 
 ​	视图的作用是渲染模型数据，将模型里的数据以某种形式呈现给客 户。视图对象由视图解析器负责实例化。由于视图是无状态的，所以他们不会有线程安全的问题;
 
@@ -772,8 +772,6 @@ SpringMVC 为逻辑视图名的解析提供了不同的策略，可 以在 Sprin
 ```
 
 **JSTL VIEW**:若项目中使用了 JSTL，则 SpringMVC 会自动把视图由**InternalResourceView 转为 JstlView**
-
-
 
 **自定义视图：**
 
@@ -841,4 +839,127 @@ public String testRedirect(){
 ```html
 <a href="springmvc/testRedirect">test testRedirect</a><br>
 ```
+
+ ## 六、REST 风格CRUD
+
+
+
+
+
+## 七、数据转化
+
+![image-20210116145813249](/Users/anner/Library/Application Support/typora-user-images/image-20210116145813249.png)
+
+## 八、MVC  Annotation - driven
+
+**<mvc:annotation-driven />** 会自动注 册RequestMappingHandlerMapping、RequestMappingHandlerAdapter 与
+
+ExceptionHandlerExceptionResolver 三个bean；
+
+**还将提供以下支持：** 
+
+- 支持使用 ConversionService 实例对表单参数进行类型转换 
+
+- 支持使用 @NumberFormat annotation、@DateTimeFormat 
+
+- 注解完成数据类型的格式化
+
+- 支持使用 @Valid 注解对 JavaBean 实例进行 JSR 303 验证 
+
+- 支持使用 @RequestBody 和 @ResponseBody 注解
+
+## 九、数据校验
+
+JSR 303 是 Java 为 Bean 数据合法性校验提供的标准框架，JSR 303 通过在 Bean 属性上标注类似于 @NotNull、@Max 
+
+等标准的注解指定校验规则，并通过标准的验证接口对 Bean 进行验证；
+
+- Spring 4.0 拥有自己独立的数据校验框架，同时支持 JSR 303 标准的校验框架。
+- Spring 在进行数据绑定时，可同时调用校验框架完成数据校 验工作。在 Spring MVC 中，可直接通过注解驱动的方式进行数据校验；
+- Spring 的 LocalValidatorFactroyBean 既实现了 Spring 的Validator 接口，也实现了 JSR 303 的 Validator 接口。只要在 Spring 容器中定义了一个LocalValidatorFactoryBean，即可将其注入到需要数据校验的 Bean 中；
+- Spring 本身并没有提供 JSR303 的实现，所以必须将JSR303 的实现者的 jar 包放到类路径；
+
+**步骤：**
+
+- 使用JSR 303 验证标准；
+- 加入hibernate validator 验证框架
+- 在Spring MVC配置文件中添加<mvc:annotation-driven/>
+- 在bean 属性上添加 @Valid注解
+
+
+
+## 十、Spring MVC  处理Json
+
+**步骤：**
+
+- 导入jar包：
+
+```xml
+<!-- json相关 依赖-->
+<dependency>
+    <groupId>com.fasterxml.jackson.core</groupId>
+    <artifactId>jackson-databind</artifactId>
+    <version>2.11.0</version>
+</dependency>
+
+<dependency>
+    <groupId>com.fasterxml.jackson.core</groupId>
+    <artifactId>jackson-core</artifactId>
+    <version>2.10.0</version>
+</dependency>
+
+<dependency>
+    <groupId>com.fasterxml.jackson.core</groupId>
+    <artifactId>jackson-annotations</artifactId>
+    <version>2.11.0</version>
+</dependency>
+```
+
+- 方法实现
+
+```html
+<a href="testJson">list all empl</a><br>
+```
+
+```js
+<script type="text/javascript">
+        $(function(){
+                $("#testJson").click(function(){
+                        var url=this.href;
+                        var args={};
+                        $.post(url,args,function(data){
+                                for(var i=0;i<data.length;i++){
+                                        var id=data[i].id;
+                                        var lastName=data[i].lastName;
+
+                                        alert(id+": "+lastName);
+                                }
+                                });
+                        return false;
+                        });
+        })
+</script>
+```
+
+```java
+@ResponseBody
+@RequestMapping("/testJson")
+public Collection<Employee> testJson(){
+    return employeeDao.getAll();
+}
+```
+
+ 
+
+**原理解析：**
+
+​	HttpMessageConverter<T> 是 Spring3.0 新添加的一个接 口，负责将请求信息转换为一个对象（类型为 T），将对象（类型为 T）输出为响应信息；
+
+![image-20210118192219268](/Users/anner/Library/Application Support/typora-user-images/image-20210118192219268.png)
+
+**使用 HttpMessageConverter<T>** 将请求信息转化并绑定到处理方法的入 参中或将响应结果转为对应类型的响应信息，Spring 提供了两种途径：
+
+- 使用 @RequestBody / @ResponseBody – 对处理方法进行标注
+
+- 使用 HttpEntity<T> / ResponseEntity<T> 作为处理方法的入参或返回– 值
 
