@@ -247,8 +247,6 @@ public class SpringMvcTest {
 
 ### 2.3  @PathVariable
 
-
-
 ```java
 /**
  * 可以映射url中的占位符到目标方法中；
@@ -438,11 +436,6 @@ Spring MVC 会按请求参数名和 POJO 属性名进行自动匹配，自动为
 ```java
 package com.restart.beans;
 
-/**
- * @author : anner
- * @description:
- * @date : 2021/1/9
- */
 public class User {
     private Integer id;
 
@@ -529,9 +522,6 @@ public class User {
     public User() {}
 
 }
-
-
-
 
 public class Address {
     private String province;
@@ -631,9 +621,9 @@ Spring MVC 提供了以下几种途径输出模型数据：
 
 ```java
 /**
- *ModelAndView 其中可以包含，Model 以及View；
+ *ModelAndView 其中可以包含，Model以及View；
  * 其中包含视图与模型信息；
- * SpringMVC  会把ModelAndView 中的数据会把数据放到Request域中；
+ * SpringMVC  会把ModelAndView,model中的数据会把数据放到Request域中；
  */
 @RequestMapping(value = "/testmodelandview")
 public ModelAndView testModelAndView() {
@@ -673,7 +663,7 @@ public String testMap(Map<String,Object> map){
 
 ```java
 /**
- *@SessionAttributes 除了可以通过属性名指定需要放到会 话中的属性外，还可以通过模型属性的对象类型指定哪些模型属性需要放到会话中;
+ *@SessionAttributes 除了可以通过属性名指定需要放到会话中的属性外，还可以通过模型属性的对象类型指定哪些模型属性需要放到会话中;
  * 
  * 注意：该注解只能放在上，而不能放在方法上
  */
@@ -701,8 +691,11 @@ public String testSessionAttribute(Map<String,Object> map){
 ```java
 /**
  * 1、@ModelAttribute 标记的方法，会在每个目标方法执行志气啊被SpringMVC调用，把对象放入map 中，键为user：
- *2、Spring MVC 从MAp中，并把表单中，并把请求参数给User对应饿属性值；
- * 3、Spring MVC把上述的对象传入暮年方法的参数。
+ * 2、Spring MVC 从MAp中，并把表单中，并把请求参数给User对应饿属性值；
+ * 3、Spring MVC把上述的对象传入目标方法的参数。
+ 
+ 注意：
+ 在@modelAttribute 修饰的方法中，放入Map时需要和目标方法传入的参数的一个字母小写的字符串一致；
  */
 
 @ModelAttribute
@@ -745,11 +738,13 @@ public String testModelAttribute(User user){
 <br><br>
 ```
 
+![image-20210223135047916](/Users/anner/Library/Application Support/typora-user-images/image-20210223135047916.png)
+
 ## 五、视图以及视图解析器
 
-​	请求处理方法执行完成后，最终返回一个 ModelAndView 对象。对于那些返回 String，View 或 ModeMap 等类型的处理方法，Spring MVC 也会在内部将它们装配成一个ModelAndView 对象，它包含了逻辑名和模型对象的视图Spring MVC 借助视图解析器（ViewResolver）得到最终的视图对象（View），最终的视图可以是 JSP ，也可能是Excel、JFreeChart 等各种表现形式的视图
+​	请求处理方法执行完成后，最终返回一个 ModelAndView 对象。**对于那些返回 String，View 或 ModeMap 等类型的处理方法，Spring MVC 也会在内部将它们装配成一个ModelAndView 对象，**它包含了逻辑名和模型对象的视图Spring MVC 借助视图解析器（ViewResolver）得到最终的视图对象（View），最终的视图可以是 JSP ，也可能是Excel、JFreeChart 等各种表现形式的视图
 
-​	视图的作用是渲染模型数据，将模型里的数据以某种形式呈现给客 户。视图对象由视图解析器负责实例化。由于视图是无状态的，所以他们不会有线程安全的问题;
+​	**视图的作用是渲染模型数据**，将模型里的数据以某种形式呈现给客 户。视图对象由视图解析器负责实例化。由于视图是无状态的，所以他们不会有线程安全的问题;
 
 ![image-20210111141445408](/Users/anner/Library/Application Support/typora-user-images/image-20210111141445408.png)
 
@@ -758,8 +753,6 @@ public String testModelAttribute(User user){
 SpringMVC 为逻辑视图名的解析提供了不同的策略，可 以在 Spring WEB 上下文中配置一种或多种解析策略，并指定他们之间的先后顺序。每一种映射策略对应一个具体的视图解析器实现类。
 
 视图解析器的作用比较单一：将逻辑视图解析为一个具体 的视图对象。所有的视图解析器都必须实现 ViewResolver 接口；
-
-
 
 **JSP 是最常见的视图技术，**可以使用InternalResourceViewResolver 作为视图解析器：
 
@@ -842,9 +835,82 @@ public String testRedirect(){
 
  ## 六、REST 风格CRUD
 
+1、引入相关JAR包；
+
+![image-20210223151209631](/Users/anner/Library/Application Support/typora-user-images/image-20210223151209631.png)
+
+2、相关配置文件：
+
+**Web.xml**
+
+- SpringDispatcherServlet
+- HiddenHttpMethordFilter
+
+```xml
+<?xml version="1.0" encoding="UTF-8"?>
+<web-app xmlns="http://xmlns.jcp.org/xml/ns/javaee"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://xmlns.jcp.org/xml/ns/javaee http://xmlns.jcp.org/xml/ns/javaee/web-app_4_0.xsd"
+         version="4.0">
+    <!--    配置HiddenHttpMethodFilter 可以将 post 请求转换为 DELETE  PUT 请求-->
+    <filter>
+        <filter-name>HiddenHttpMethodFilter</filter-name>
+        <filter-class>org.springframework.web.filter.HiddenHttpMethodFilter</filter-class>
+    </filter>
+    <filter-mapping>
+        <filter-name>HiddenHttpMethodFilter</filter-name>
+        <url-pattern>/*</url-pattern>
+    </filter-mapping>
+
+    <!--  1、  配置dispatcherServlet-->
+    <servlet>
+        <servlet-name>SpringDispatcherServlet</servlet-name>
+        <servlet-class>org.springframework.web.servlet.DispatcherServlet</servlet-class>
+        <init-param>
+            <param-name>contextConfigLocation</param-name>
+            <param-value>classpath:springmvc.xml</param-value>
+        </init-param>
+        <load-on-startup>1</load-on-startup>
+    </servlet>
+    <servlet-mapping>
+        <servlet-name>SpringDispatcherServlet</servlet-name>
+        <url-pattern>/</url-pattern>
+    </servlet-mapping>
 
 
+</web-app>
+```
 
+**Springmvc.xml**
+
+- Component  自动扫描的包
+- 视图解析器
+
+```xml
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xmlns:context="http://www.springframework.org/schema/context"
+       xmlns:mvc="http://www.springframework.org/schema/mvc"
+       xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context.xsd http://www.springframework.org/schema/mvc http://www.springframework.org/schema/mvc/spring-mvc.xsd">
+
+    <!--     配置扫描注解包-->
+    <context:component-scan base-package="com.restart"/>
+
+    <!--    配置视图解析器-->
+    <bean class="org.springframework.web.servlet.view.InternalResourceViewResolver">
+        <property name="prefix" value="WEB-INF/views/"/>
+        <property name="suffix" value=".jsp"/>
+    </bean>
+    <!--    配置视图解析器:bean  name 解析视图
+    order 来进行优先级设置-->
+    <bean class="org.springframework.web.servlet.view.BeanNameViewResolver">
+        <property name="order" value="100"/>
+    </bean>
+    <mvc:annotation-driven></mvc:annotation-driven>
+
+</beans>
+```
 
 ## 七、数据转化
 
